@@ -1,0 +1,85 @@
+var eventsDataView;
+var eventsDataViewToolbar;
+var eventsCarousel;
+var eventsMap;
+var eventsMapToolbar;
+
+function eventsInit(cell) {
+	
+	if (eventsCarousel == null) {
+		
+		// init carousel
+		eventsCarousel = cell.attachCarousel({
+			offset_item: 0,
+			keys: false,
+			touch_scroll: false
+		});
+		eventsCarousel.hideControls();
+		eventsCarousel.addCell("dataview");
+		eventsCarousel.addCell("details");
+		
+		// attach dataview
+		eventsDataView = eventsCarousel.cells("dataview").attachDataView({
+			type: {
+				template: "<div class='node_name'>#NAME#</div>"+
+						"<div class='node_status'>#STATUS#</div>"+
+						"<div class='node_age'>#AGE#</div>",
+				margin: 1,
+				padding: 15,
+				height: 210
+			},
+			autowidth: (A.deviceOrient=="portrait"?2:4),
+			drag: false,
+			select: true,
+			edit: false
+		});
+		eventsDataView.load("/command/list/ocgetnode");
+		eventsDataView.attachEvent("onItemClick", function(id){
+			},200);
+		
+		// attach datview toolbar
+		eventsDataViewToolbar = eventsCarousel.cells("dataview").attachToolbar({
+			icons_size: 32,
+			icons_path: "imgs/toolbar/",
+			items: [
+				{type: "button", id: "add", img: "add.png"}
+			]
+		});
+		
+	} else {
+		eventsCarousel.cells("dataview").setActive();
+	}
+	
+}
+
+function eventsInitMap() {
+	// attach map toolbar
+	eventsMapToolbar = eventsCarousel.cells("details").attachToolbar({
+		icons_size: 32,
+		icons_path: "imgs/toolbar/",
+		items: [
+			{type: "button", id: "back", img: "back.png"}
+		]
+	});
+	eventsMapToolbar.attachEvent("onClick", function(id){
+		switch (id) {
+		case "back":
+			eventsCarousel.cells("dataview").setActive();
+			break;
+		}
+	});
+	
+	// attach map
+	eventsMap = eventsCarousel.cells("details").attachMap();
+}
+
+window.dhx4.attachEvent("onSidebarSelect", function(id, cell){
+	if (id == "events") eventsInit(cell);
+});
+
+window.dhx4.attachEvent("onOrientationChange", function(deviceOrient){
+	if (eventsDataView != null) {
+		eventsDataView.config.autowidth = (deviceOrient=="portrait"?2:4);
+		eventsDataView.refresh();
+	}
+});
